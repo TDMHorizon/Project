@@ -64,14 +64,30 @@ cd "E:\CuaTDM\DoAn\QuanLyCongViec\Database\QuanLyCongViec\Project"
 3. CAC BUOC PUSH CODE LEN GITHUB
 ================================================
 
+⚠ LUU Y: Git KHONG tu dong add/commit! Ban phai lam thu cong.
+
+WORKFLOW CHUAN:
+1. Chinh sua file trong project (Visual Studio, Notepad, ...)
+2. git status -> Xem thay doi
+3. git add -> Them thay doi vao staging area
+4. git commit -> Tao commit voi message
+5. git push -> Day len GitHub
+
 # Buoc 1: Xem cac thay doi
 git status
+# Se hien thi:
+# - Untracked files: File MOI chua duoc add lan nao
+# - Modified: File da track nhung bi sua
+# - Deleted: File da bi xoa
 
 # Buoc 2: Them tat ca cac file thay doi (hoac file cu the)
 git add .
 # HOAC them tung file:
 # git add ten_file.cs
 # git add ten_thu_muc/
+#
+# Sau khi "git add", cac file se o trang thai "staged"
+# (San sang de commit)
 
 # Buoc 3: Commit cac thay doi
 git commit -m "Mo ta thay doi cua ban"
@@ -79,11 +95,15 @@ git commit -m "Mo ta thay doi cua ban"
 # git commit -m "Add login form"
 # git commit -m "Update database scripts"
 # git commit -m "Fix bug in registration"
+#
+# Sau khi commit, thay doi duoc luu trong git history
 
 # Buoc 4: Push len GitHub
 git push origin main
 # Neu branch khac main, thay main bang ten branch cua ban:
 # git push origin ten_branch
+#
+# Sau khi push, code cua ban co tren GitHub!
 
 ------------------------------------------------
 
@@ -343,6 +363,34 @@ git push -u origin main
 # TRA LOI: KHONG! Phai commit truoc khi push.
 #          Thu tu: git add -> git commit -> git push
 
+# CAU HOI: Tai sao Git KHONG tu dong add va commit khi minh chinh sua file?
+# TRA LOI: Day la THIET KE AN TOAN cua Git!
+# 
+# 1. BAO VE BAN KHOI CAC COMMIT NHAM:
+#    - Ban co the chinh sua nhieu file nhung chi muon commit mot so file
+#    - Ban co the test code truoc khi commit
+#    - Ban co the xem lai thay doi truoc khi quyet dinh commit
+#
+# 2. CONTROLLED WORKFLOW:
+#    - Git muon ban CO Y THUC ve nhung gi dang commit
+#    - Ban phai xac nhan: "Toi muon commit dieu nay"
+#    - Tranh commit nhung file khong mong muon (config, temp files, ...)
+#
+# 3. HAI LOAI FILE KHAC NHAU:
+#    - UNTRACKED FILES: File MOI, chua bao gio duoc them vao git
+#      -> Phai "git add" lan dau tien
+#    - MODIFIED FILES: File da duoc track, nhung bi sua doi
+#      -> Cung phai "git add" de stage thay doi
+#
+# 4. WORKFLOW CHUAN:
+#    Chinh sua file -> git add -> git commit -> git push
+#    (Khong co buoc nao la tu dong!)
+#
+# 5. NEU MUON TANG TIEN DO:
+#    - Dung GitHub Desktop: GUI de add/commit/push
+#    - Dung alias (git shortcuts) de rut ngan lenh
+#    - Nhung van phai click/lenh thu cong!
+
 ------------------------------------------------
 
 ================================================
@@ -419,6 +467,11 @@ LUU Y QUAN TRONG
 
 7. Thu muc project: 
    E:\CuaTDM\DoAn\QuanLyCongViec\Database\QuanLyCongViec\Project
+
+8. Git KHONG tu dong add/commit:
+   - Phai thu cong chay: git add -> commit -> push
+   - Day la thiet ke an toan cua Git
+   - Ban co the chon file nao muon commit
 
 ================================================
 
