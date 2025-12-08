@@ -12,24 +12,6 @@ namespace QuanLyCongViec
     //Form đăng ký tài khoản mới cho hệ thống Quản lý Công việc
     public partial class frmDangKy : Form
     {
-        #region Constants - Hằng số
-        //Độ dài tối thiểu của tên đăng nhập
-        private const int MIN_USERNAME_LENGTH = 3;
-        //Độ dài tối đa của tên đăng nhập
-        private const int MAX_USERNAME_LENGTH = 50;
-        //Độ dài tối thiểu của mật khẩu
-        private const int MIN_PASSWORD_LENGTH = 6;
-        //Độ dài tối đa của mật khẩu
-        private const int MAX_PASSWORD_LENGTH = 100;
-        //Độ dài tối đa của email
-        private const int MAX_EMAIL_LENGTH = 100;
-        //Độ dài tối đa của họ tên
-        private const int MAX_FULLNAME_LENGTH = 100;
-        //Mã lỗi từ stored procedure: Username đã tồn tại
-        private const int ERROR_USERNAME_EXISTS = -1;
-        //Mã lỗi từ stored procedure: Email đã tồn tại
-        private const int ERROR_EMAIL_EXISTS = -2;
-        #endregion
 
         #region Properties - Thuộc tính
         //Username đã đăng ký thành công (để trả về form đăng nhập)
@@ -81,17 +63,17 @@ namespace QuanLyCongViec
                     return;
                 }
                 // Lấy thông tin từ form
-                RegistrationData data = GetRegistrationData();
+                RegistrationData duLieuDangKy = GetRegistrationData();
                 // Hash mật khẩu
-                string passwordHash = HashPassword(data.Password);
+                string maHoaMatKhau = HashPassword(duLieuDangKy.Password);
                 // Đăng ký tài khoản vào database
-                int userId = RegisterUserToDatabase(data, passwordHash);
+                int maNguoiDung = RegisterUserToDatabase(duLieuDangKy, maHoaMatKhau);
                 // Xử lý kết quả đăng ký
-                ProcessRegistrationResult(userId, data);
+                ProcessRegistrationResult(maNguoiDung, duLieuDangKy);
             }
-            catch (Exception ex)
+            catch (Exception loi)
             {
-                ShowRegistrationError(ex);
+                ShowRegistrationError(loi);
             }
         }
 
@@ -113,41 +95,41 @@ namespace QuanLyCongViec
         
         //Hash mật khẩu bằng PasswordHelper
         
-        //<param name="password">Mật khẩu gốc</param>
+        //<param name="matKhau">Mật khẩu gốc</param>
         //<returns>Mật khẩu đã được hash</returns>
-        private string HashPassword(string password)
+        private string HashPassword(string matKhau)
         {
-            return PasswordHelper.HashPassword(password);
+            return PasswordHelper.HashPassword(matKhau);
         }
 
         
         //Đăng ký user vào database thông qua stored procedure
         
-        //<param name="data">Thông tin đăng ký</param>
-        //<param name="passwordHash">Mật khẩu đã hash</param>
-        //<returns>UserId nếu thành công, mã lỗi nếu thất bại</returns>
-        private int RegisterUserToDatabase(RegistrationData data, string passwordHash)
+        //<param name="duLieuDangKy">Thông tin đăng ký</param>
+        //<param name="maHoaMatKhau">Mật khẩu đã hash</param>
+        //<returns>Mã người dùng nếu thành công, mã lỗi nếu thất bại</returns>
+        private int RegisterUserToDatabase(RegistrationData duLieuDangKy, string maHoaMatKhau)
         {
-            SqlParameter userIdParam = new SqlParameter("@UserId", SqlDbType.Int)
+            SqlParameter thamSoMaNguoiDung = new SqlParameter("@UserId", SqlDbType.Int)
             {
                 Direction = ParameterDirection.Output
             };
 
-            SqlParameter[] parameters = new SqlParameter[]
+            SqlParameter[] thamSo = new SqlParameter[]
             {
-                new SqlParameter("@Username", data.Username),
-                new SqlParameter("@PasswordHash", passwordHash),
-                new SqlParameter("@FullName", data.FullName),
-                new SqlParameter("@Email", data.Email),
-                userIdParam
+                new SqlParameter("@Username", duLieuDangKy.Username),
+                new SqlParameter("@PasswordHash", maHoaMatKhau),
+                new SqlParameter("@FullName", duLieuDangKy.FullName),
+                new SqlParameter("@Email", duLieuDangKy.Email),
+                thamSoMaNguoiDung
             };
 
-            DatabaseHelper.ExecuteStoredProcedureNonQuery("sp_UserRegister", parameters);
+            DatabaseHelper.ExecuteStoredProcedureNonQuery("sp_UserRegister", thamSo);
 
-            // Lấy giá trị UserId từ output parameter
-            if (userIdParam.Value != null && userIdParam.Value != DBNull.Value)
+            // Lấy giá trị mã người dùng từ output parameter
+            if (thamSoMaNguoiDung.Value != null && thamSoMaNguoiDung.Value != DBNull.Value)
             {
-                return Convert.ToInt32(userIdParam.Value);
+                return Convert.ToInt32(thamSoMaNguoiDung.Value);
             }
 
             return 0;
@@ -156,19 +138,23 @@ namespace QuanLyCongViec
         
         //Xử lý kết quả đăng ký từ database
         
-        //<param name="userId">UserId hoặc mã lỗi từ stored procedure</param>
-        //<param name="data">Thông tin đăng ký</param>
-        private void ProcessRegistrationResult(int userId, RegistrationData data)
+        //<param name="maNguoiDung">Mã người dùng hoặc mã lỗi từ stored procedure</param>
+        //<param name="duLieuDangKy">Thông tin đăng ký</param>
+        private void ProcessRegistrationResult(int maNguoiDung, RegistrationData duLieuDangKy)
         {
-            if (userId > 0)
+            // Lấy các mã lỗi từ database
+            int maLoiUsernameTonTai = Helpers.SystemSettings.ErrorUsernameExists;
+            int maLoiEmailTonTai = Helpers.SystemSettings.ErrorEmailExists;
+
+            if (maNguoiDung > 0)
             {
-                HandleSuccessfulRegistration(userId, data);
+                HandleSuccessfulRegistration(maNguoiDung, duLieuDangKy);
             }
-            else if (userId == ERROR_USERNAME_EXISTS)
+            else if (maNguoiDung == maLoiUsernameTonTai)
             {
                 HandleUsernameExistsError();
             }
-            else if (userId == ERROR_EMAIL_EXISTS)
+            else if (maNguoiDung == maLoiEmailTonTai)
             {
                 HandleEmailExistsError();
             }
@@ -181,19 +167,19 @@ namespace QuanLyCongViec
         
         //Xử lý khi đăng ký thành công
         
-        //<param name="userId">UserId của tài khoản mới</param>
-        //<param name="data">Thông tin đăng ký</param>
-        private void HandleSuccessfulRegistration(int userId, RegistrationData data)
+        //<param name="maNguoiDung">Mã người dùng của tài khoản mới</param>
+        //<param name="duLieuDangKy">Thông tin đăng ký</param>
+        private void HandleSuccessfulRegistration(int maNguoiDung, RegistrationData duLieuDangKy)
         {
-            RegisteredUsername = data.Username;
+            RegisteredUsername = duLieuDangKy.Username;
 
-            string successMessage = $"Đăng ký thành công!\n\n" +
-                                   $"Tài khoản: {data.Username}\n" +
-                                   $"Họ tên: {data.FullName}\n\n" +
+            string thongBaoThanhCong = $"Đăng ký thành công!\n\n" +
+                                   $"Tài khoản: {duLieuDangKy.Username}\n" +
+                                   $"Họ tên: {duLieuDangKy.FullName}\n\n" +
                                    $"Bạn có thể đăng nhập ngay bây giờ.";
 
             MessageBox.Show(
-                successMessage,
+                thongBaoThanhCong,
                 "Thành công",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Information
@@ -208,10 +194,10 @@ namespace QuanLyCongViec
         
         private void HandleUsernameExistsError()
         {
-            string errorMessage = "Tên đăng nhập đã được sử dụng!\n\nVui lòng chọn tên đăng nhập khác.";
+            string thongBaoLoi = "Tên đăng nhập đã được sử dụng!\n\nVui lòng chọn tên đăng nhập khác.";
 
             MessageBox.Show(
-                errorMessage,
+                thongBaoLoi,
                 "Lỗi đăng ký",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Error
@@ -225,10 +211,10 @@ namespace QuanLyCongViec
         
         private void HandleEmailExistsError()
         {
-            string errorMessage = "Email đã được sử dụng!\n\nVui lòng sử dụng email khác.";
+            string thongBaoLoi = "Email đã được sử dụng!\n\nVui lòng sử dụng email khác.";
 
             MessageBox.Show(
-                errorMessage,
+                thongBaoLoi,
                 "Lỗi đăng ký",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Error
@@ -266,11 +252,11 @@ namespace QuanLyCongViec
         
         //Hiển thị thông báo lỗi khi có exception xảy ra
         
-        //<param name="ex">Exception xảy ra</param>
-        private void ShowRegistrationError(Exception ex)
+        //<param name="loi">Exception xảy ra</param>
+        private void ShowRegistrationError(Exception loi)
         {
             MessageBox.Show(
-                $"Lỗi khi đăng ký!\n\nChi tiết: {ex.Message}",
+                $"Lỗi khi đăng ký!\n\nChi tiết: {loi.Message}",
                 "Lỗi",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Error
@@ -303,21 +289,24 @@ namespace QuanLyCongViec
                 return false;
             }
 
-            string username = txtTaiKhoan.Text.Trim();
+            string tenDangNhap = txtTaiKhoan.Text.Trim();
 
-            if (username.Length < MIN_USERNAME_LENGTH)
+            int doDaiToiThieu = Helpers.ValidationLimits.MinUsernameLength;
+            int doDaiToiDa = Helpers.ValidationLimits.MaxUsernameLength;
+
+            if (tenDangNhap.Length < doDaiToiThieu)
             {
-                ShowValidationError($"Tên đăng nhập phải có ít nhất {MIN_USERNAME_LENGTH} ký tự!", txtTaiKhoan);
+                ShowValidationError($"Tên đăng nhập phải có ít nhất {doDaiToiThieu} ký tự!", txtTaiKhoan);
                 return false;
             }
 
-            if (username.Length > MAX_USERNAME_LENGTH)
+            if (tenDangNhap.Length > doDaiToiDa)
             {
-                ShowValidationError($"Tên đăng nhập không được vượt quá {MAX_USERNAME_LENGTH} ký tự!", txtTaiKhoan);
+                ShowValidationError($"Tên đăng nhập không được vượt quá {doDaiToiDa} ký tự!", txtTaiKhoan);
                 return false;
             }
 
-            if (username.Contains(" "))
+            if (tenDangNhap.Contains(" "))
             {
                 ShowValidationError("Tên đăng nhập không được chứa khoảng trắng!", txtTaiKhoan);
                 return false;
@@ -338,25 +327,28 @@ namespace QuanLyCongViec
                 return false;
             }
 
-            string password = txtMatKhau.Text;
+            string matKhau = txtMatKhau.Text;
 
-            if (password.Length < MIN_PASSWORD_LENGTH)
+            int doDaiToiThieu = Helpers.ValidationLimits.MinPasswordLength;
+            int doDaiToiDa = Helpers.ValidationLimits.MaxPasswordLength;
+
+            if (matKhau.Length < doDaiToiThieu)
             {
-                ShowValidationError($"Mật khẩu phải có ít nhất {MIN_PASSWORD_LENGTH} ký tự!", txtMatKhau);
+                ShowValidationError($"Mật khẩu phải có ít nhất {doDaiToiThieu} ký tự!", txtMatKhau);
                 return false;
             }
 
-            if (password.Length > MAX_PASSWORD_LENGTH)
+            if (matKhau.Length > doDaiToiDa)
             {
-                ShowValidationError($"Mật khẩu không được vượt quá {MAX_PASSWORD_LENGTH} ký tự!", txtMatKhau);
+                ShowValidationError($"Mật khẩu không được vượt quá {doDaiToiDa} ký tự!", txtMatKhau);
                 return false;
             }
 
             // Kiểm tra độ phức tạp mật khẩu
-            string passwordStrengthError = ValidatePasswordStrength(password);
-            if (!string.IsNullOrEmpty(passwordStrengthError))
+            string loiMatKhau = ValidatePasswordStrength(matKhau);
+            if (!string.IsNullOrEmpty(loiMatKhau))
             {
-                ShowValidationError(passwordStrengthError, txtMatKhau);
+                ShowValidationError(loiMatKhau, txtMatKhau);
                 return false;
             }
 
@@ -396,10 +388,11 @@ namespace QuanLyCongViec
                 return false;
             }
 
-            string fullName = txtHoTen.Text.Trim();
-            if (fullName.Length > MAX_FULLNAME_LENGTH)
+            string hoTen = txtHoTen.Text.Trim();
+            int doDaiToiDa = Helpers.ValidationLimits.MaxFullNameLength;
+            if (hoTen.Length > doDaiToiDa)
             {
-                ShowValidationError($"Họ tên không được vượt quá {MAX_FULLNAME_LENGTH} ký tự!", txtHoTen);
+                ShowValidationError($"Họ tên không được vượt quá {doDaiToiDa} ký tự!", txtHoTen);
                 return false;
             }
 
@@ -418,15 +411,16 @@ namespace QuanLyCongViec
                 return false;
             }
 
-            string email = txtEmail.Text.Trim();
+            string thuDienTu = txtEmail.Text.Trim();
 
-            if (email.Length > MAX_EMAIL_LENGTH)
+            int doDaiToiDa = Helpers.ValidationLimits.MaxEmailLength;
+            if (thuDienTu.Length > doDaiToiDa)
             {
-                ShowValidationError($"Email không được vượt quá {MAX_EMAIL_LENGTH} ký tự!", txtEmail);
+                ShowValidationError($"Email không được vượt quá {doDaiToiDa} ký tự!", txtEmail);
                 return false;
             }
 
-            if (!IsValidEmail(email))
+            if (!IsValidEmail(thuDienTu))
             {
                 ShowValidationError("Email không hợp lệ!\n\nVui lòng nhập đúng định dạng email.\nVí dụ: example@email.com", txtEmail);
                 return false;
@@ -478,9 +472,9 @@ namespace QuanLyCongViec
         //Hiện tại chỉ yêu cầu độ dài tối thiểu
         //Có thể mở rộng thêm yêu cầu: chữ hoa, chữ thường, số, ký tự đặc biệt
         
-        //<param name="password">Mật khẩu cần kiểm tra</param>
+        //<param name="matKhau">Mật khẩu cần kiểm tra</param>
         //<returns>Thông báo lỗi nếu không hợp lệ, null nếu hợp lệ</returns>
-        private string ValidatePasswordStrength(string password)
+        private string ValidatePasswordStrength(string matKhau)
         {
             // Hiện tại chỉ yêu cầu độ dài tối thiểu
             // Có thể mở rộng thêm yêu cầu: chữ hoa, chữ thường, số, ký tự đặc biệt
@@ -490,11 +484,11 @@ namespace QuanLyCongViec
         
         //Kiểm tra email có hợp lệ không bằng regex pattern
         
-        //<param name="email">Email cần kiểm tra</param>
+        //<param name="thuDienTu">Email cần kiểm tra</param>
         //<returns>True nếu email hợp lệ, False nếu không</returns>
-        private bool IsValidEmail(string email)
+        private bool IsValidEmail(string thuDienTu)
         {
-            if (string.IsNullOrWhiteSpace(email))
+            if (string.IsNullOrWhiteSpace(thuDienTu))
             {
                 return false;
             }
@@ -502,34 +496,34 @@ namespace QuanLyCongViec
             try
             {
                 // Regex pattern để kiểm tra định dạng email
-                string pattern = @"^[a-zA-Z0-9]([a-zA-Z0-9._-]*[a-zA-Z0-9])?@[a-zA-Z0-9]([a-zA-Z0-9.-]*[a-zA-Z0-9])?\.[a-zA-Z]{2,}$";
+                string mauRegex = @"^[a-zA-Z0-9]([a-zA-Z0-9._-]*[a-zA-Z0-9])?@[a-zA-Z0-9]([a-zA-Z0-9.-]*[a-zA-Z0-9])?\.[a-zA-Z]{2,}$";
 
                 // Kiểm tra cơ bản trước
-                if (!email.Contains("@") || !email.Contains("."))
+                if (!thuDienTu.Contains("@") || !thuDienTu.Contains("."))
                 {
                     return false;
                 }
 
                 // Kiểm tra không có khoảng trắng
-                if (email.Contains(" "))
+                if (thuDienTu.Contains(" "))
                 {
                     return false;
                 }
 
                 // Kiểm tra @ không ở đầu hoặc cuối
-                if (email.StartsWith("@") || email.EndsWith("@"))
+                if (thuDienTu.StartsWith("@") || thuDienTu.EndsWith("@"))
                 {
                     return false;
                 }
 
                 // Kiểm tra . không ở đầu hoặc cuối
-                if (email.StartsWith(".") || email.EndsWith("."))
+                if (thuDienTu.StartsWith(".") || thuDienTu.EndsWith("."))
                 {
                     return false;
                 }
 
                 // Kiểm tra regex pattern
-                return Regex.IsMatch(email, pattern, RegexOptions.IgnoreCase);
+                return Regex.IsMatch(thuDienTu, mauRegex, RegexOptions.IgnoreCase);
             }
             catch
             {

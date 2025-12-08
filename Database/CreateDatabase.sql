@@ -121,7 +121,38 @@ CREATE INDEX IX_TaskHistory_ActionDate ON TaskHistory(ActionDate DESC);
 GO
 
 -- =============================================
--- 4. VIEWS - Các view hỗ trợ báo cáo
+-- 4. BẢNG SETTINGS - Cấu hình hệ thống
+-- =============================================
+IF OBJECT_ID('Settings', 'U') IS NOT NULL
+    DROP TABLE Settings;
+GO
+
+CREATE TABLE Settings
+(
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    SettingKey NVARCHAR(100) NOT NULL UNIQUE,
+    SettingValue NVARCHAR(255) NOT NULL,
+    Description NVARCHAR(500) NULL,
+    CreatedDate DATETIME NOT NULL DEFAULT GETDATE(),
+    UpdatedDate DATETIME NULL
+);
+GO
+
+-- Insert các cấu hình mặc định
+INSERT INTO Settings (SettingKey, SettingValue, Description)
+VALUES 
+    ('MAX_LOGIN_ATTEMPTS', '5', N'Số lần đăng nhập sai tối đa cho phép trước khi khóa tài khoản'),
+    ('LOCKOUT_MINUTES', '15', N'Thời gian khóa tài khoản (tính bằng phút) sau khi đăng nhập sai quá nhiều lần'),
+    ('ERROR_USERNAME_EXISTS', '-1', N'Mã lỗi từ stored procedure: Username đã tồn tại'),
+    ('ERROR_EMAIL_EXISTS', '-2', N'Mã lỗi từ stored procedure: Email đã tồn tại');
+GO
+
+-- Index cho SettingKey để tối ưu tìm kiếm
+CREATE INDEX IX_Settings_SettingKey ON Settings(SettingKey);
+GO
+
+-- =============================================
+-- 5. VIEWS - Các view hỗ trợ báo cáo
 -- =============================================
 
 -- View: Thống kê theo trạng thái

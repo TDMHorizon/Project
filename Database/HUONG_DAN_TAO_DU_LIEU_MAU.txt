@@ -1,0 +1,158 @@
+========================================
+HƯỚNG DẪN TẠO DỮ LIỆU MẪU NGẪU NHIÊN
+========================================
+
+📁 FILE: InsertRandomSampleData.sql
+
+🎯 CHỨC NĂNG:
+Script này sẽ tạo dữ liệu mẫu ngẫu nhiên cho ứng dụng Quản Lý Công Việc:
+- Tạo nhiều Users (tài khoản)
+- Tạo nhiều Tasks (công việc) cho mỗi user
+- Dữ liệu được random với đầy đủ các trạng thái, độ ưu tiên, phân loại
+
+========================================
+CẤU HÌNH SỐ LƯỢNG
+========================================
+
+Mở file InsertRandomSampleData.sql và tìm dòng:
+
+DECLARE @SoLuongUsers INT = 15;        -- Số lượng users
+DECLARE @SoLuongTasksPerUser INT = 12; -- Số lượng tasks mỗi user
+
+Thay đổi các số này để tạo nhiều/ít dữ liệu hơn:
+- @SoLuongUsers: Số lượng users muốn tạo (khuyến nghị: 10-20)
+- @SoLuongTasksPerUser: Số lượng tasks mỗi user (khuyến nghị: 5-20)
+
+VÍ DỤ:
+- @SoLuongUsers = 20, @SoLuongTasksPerUser = 15
+  → Tổng cộng: 20 users × 15 tasks = 300 tasks
+
+- @SoLuongUsers = 10, @SoLuongTasksPerUser = 8
+  → Tổng cộng: 10 users × 8 tasks = 80 tasks
+
+========================================
+DỮ LIỆU ĐƯỢC TẠO
+========================================
+
+1. USERS (Tài khoản):
+   - Username: user1, user2, user3, ...
+   - Password: 123456 (tất cả user dùng chung password này)
+   - FullName: Tên tiếng Việt ngẫu nhiên (20 tên có sẵn)
+   - Email: user1@example.com, user2@example.com, ...
+   - Tài khoản admin: admin@example.com (password: 123456)
+
+2. TASKS (Công việc):
+   - Tiêu đề: 30+ công việc mẫu (Work, Personal, Study)
+   - Status: Todo, Doing, Done (random)
+   - Priority: High, Medium, Low (random)
+   - Category: Work, Personal, Study (random)
+   - DueDate: Từ 30 ngày trước đến 30 ngày sau
+   - CreatedDate: Từ 60 ngày trước đến hiện tại
+
+========================================
+CÁCH SỬ DỤNG
+========================================
+
+BƯỚC 1: Mở SQL Server Management Studio (SSMS)
+
+BƯỚC 2: Kết nối với SQL Server của bạn
+
+BƯỚC 3: Mở file InsertRandomSampleData.sql
+
+BƯỚC 4: (Tùy chọn) Thay đổi số lượng users và tasks ở đầu file:
+   DECLARE @SoLuongUsers INT = 15;
+   DECLARE @SoLuongTasksPerUser INT = 12;
+
+BƯỚC 5: Chạy toàn bộ script (F5 hoặc Execute)
+
+BƯỚC 6: Kiểm tra kết quả:
+   - Script sẽ hiển thị thống kê sau khi chạy xong
+   - Đăng nhập vào ứng dụng với:
+     * Username: admin (hoặc user1, user2, ...)
+     * Password: 123456
+
+========================================
+THÔNG TIN ĐĂNG NHẬP
+========================================
+
+Tất cả tài khoản đều dùng password: 123456
+
+Danh sách tài khoản:
+- admin (Quản trị viên)
+- user1, user2, user3, ... (Users thường)
+
+========================================
+LƯU Ý
+========================================
+
+1. Script KHÔNG xóa dữ liệu cũ mặc định
+   - Nếu muốn xóa dữ liệu cũ, bỏ comment các dòng:
+     DELETE FROM TaskHistory;
+     DELETE FROM Tasks;
+     DELETE FROM Users WHERE Username != 'admin';
+
+2. Password hash:
+   - Tất cả users dùng password: "123456"
+   - Hash được tính với salt: "QuanLyCongViec_Salt_2024"
+
+3. Giới hạn:
+   - Số lượng users: Tối đa 20 (vì chỉ có 20 tên mẫu)
+   - Số lượng tasks mỗi user: Không giới hạn
+
+4. Dữ liệu sẽ được tạo ngẫu nhiên:
+   - Mỗi lần chạy script sẽ tạo dữ liệu khác nhau
+   - Tasks sẽ có các trạng thái, độ ưu tiên khác nhau
+   - Một số tasks sẽ quá hạn, một số sắp đến hạn
+
+========================================
+KIỂM TRA DỮ LIỆU
+========================================
+
+Sau khi chạy script, kiểm tra bằng các câu lệnh:
+
+-- Xem tổng số users
+SELECT COUNT(*) AS TongSoUsers FROM Users WHERE IsActive = 1;
+
+-- Xem tổng số tasks
+SELECT COUNT(*) AS TongSoTasks FROM Tasks WHERE IsDeleted = 0;
+
+-- Xem thống kê theo status
+SELECT Status, COUNT(*) AS SoLuong 
+FROM Tasks 
+WHERE IsDeleted = 0 
+GROUP BY Status;
+
+-- Xem thống kê theo priority
+SELECT Priority, COUNT(*) AS SoLuong 
+FROM Tasks 
+WHERE IsDeleted = 0 
+GROUP BY Priority;
+
+-- Xem tasks quá hạn
+SELECT COUNT(*) AS SoTasksQuaHan
+FROM Tasks 
+WHERE Status != 'Done' 
+AND DueDate < CAST(GETDATE() AS DATE) 
+AND IsDeleted = 0;
+
+========================================
+VÍ DỤ CẤU HÌNH
+========================================
+
+CẤU HÌNH 1: Ít dữ liệu (cho test nhanh)
+   @SoLuongUsers = 5
+   @SoLuongTasksPerUser = 8
+   → 5 users, 40 tasks
+
+CẤU HÌNH 2: Dữ liệu trung bình (khuyến nghị)
+   @SoLuongUsers = 15
+   @SoLuongTasksPerUser = 12
+   → 15 users, 180 tasks
+
+CẤU HÌNH 3: Nhiều dữ liệu (cho demo)
+   @SoLuongUsers = 20
+   @SoLuongTasksPerUser = 20
+   → 20 users, 400 tasks
+
+========================================
+

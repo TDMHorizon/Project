@@ -10,18 +10,11 @@ namespace QuanLyCongViec
     //Form đăng nhập vào hệ thống Quản lý Công việc
     public partial class frmDangNhap : Form
     {
-        #region Constants - Hằng số
-        //Số lần đăng nhập sai tối đa cho phép trước khi khóa tài khoản
-        private const int MAX_LOGIN_ATTEMPTS = 5;
-        //Thời gian khóa tài khoản (tính bằng phút) sau khi đăng nhập sai quá nhiều lần
-        private const int LOCKOUT_MINUTES = 15;
-        #endregion
-
         #region Private Fields - Các trường dữ liệu riêng tư
         //Số lần đăng nhập thất bại liên tiếp
-        private int _failedLoginAttempts = 0;
+        private int _soLanDangNhapSai = 0;
         //Thời điểm tài khoản bị khóa đến khi nào (null nếu không bị khóa)
-        private DateTime? _lockoutUntil = null;
+        private DateTime? _thoiGianKhoaDen = null;
         #endregion
 
         #region Constructor - Hàm khởi tạo
@@ -87,17 +80,17 @@ namespace QuanLyCongViec
             {
                 DatabaseHelper.TestConnection();
             }
-            catch (Exception ex)
+            catch (Exception loi)
             {
-                ShowDatabaseConnectionError(ex);
+                ShowDatabaseConnectionError(loi);
             }
         }
         //Hiển thị thông báo lỗi kết nối database
-        //<param name="ex">Exception xảy ra khi kết nối</param>
-        private void ShowDatabaseConnectionError(Exception ex)
+        //<param name="loi">Exception xảy ra khi kết nối</param>
+        private void ShowDatabaseConnectionError(Exception loi)
         {
-            string errorMessage = "❌ Lỗi kết nối database!\n\n" +
-                                "Chi tiết: " + ex.Message + "\n\n" +
+            string thongBaoLoi = "❌ Lỗi kết nối database!\n\n" +
+                                "Chi tiết: " + loi.Message + "\n\n" +
                                 "Vui lòng kiểm tra:\n" +
                                 "1. SQL Server đang chạy\n" +
                                 "2. Database 'QuanLyCongViec' đã được tạo\n" +
@@ -105,7 +98,7 @@ namespace QuanLyCongViec
                                 "Xem file README_SHARE.md trong project để biết cách setup.";
 
             MessageBox.Show(
-                errorMessage,
+                thongBaoLoi,
                 "Lỗi kết nối",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Error
@@ -115,22 +108,22 @@ namespace QuanLyCongViec
         //Nếu đăng ký thành công, tự động điền username vào form đăng nhập
         private void OpenRegistrationForm()
         {
-            frmDangKy registrationForm = new frmDangKy();
+            frmDangKy frmDangKy = new frmDangKy();
             this.Hide();
 
-            DialogResult result = registrationForm.ShowDialog();
+            DialogResult ketQua = frmDangKy.ShowDialog();
             this.Show();
 
-            if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(registrationForm.RegisteredUsername))
+            if (ketQua == DialogResult.OK && !string.IsNullOrWhiteSpace(frmDangKy.RegisteredUsername))
             {
-                FillUsernameAfterRegistration(registrationForm.RegisteredUsername);
+                FillUsernameAfterRegistration(frmDangKy.RegisteredUsername);
             }
         }
-        //Điền username vào textbox sau khi đăng ký thành công
-        //<param name="username">Username đã đăng ký</param>
-        private void FillUsernameAfterRegistration(string username)
+        //Điền tên đăng nhập vào textbox sau khi đăng ký thành công
+        //<param name="tenDangNhap">Tên đăng nhập đã đăng ký</param>
+        private void FillUsernameAfterRegistration(string tenDangNhap)
         {
-            txtTaiKhoan.Text = username;
+            txtTaiKhoan.Text = tenDangNhap;
             txtMatKhau.Clear();
             txtMatKhau.Focus();
         }
@@ -157,32 +150,32 @@ namespace QuanLyCongViec
                 // Xử lý kết quả đăng nhập
                 ProcessLoginResult(loginResult);
             }
-            catch (Exception ex)
+            catch (Exception loi)
             {
-                ShowLoginError(ex);
+                ShowLoginError(loi);
             }
         }
         //Kiểm tra tài khoản có đang bị khóa không
         //<returns>True nếu tài khoản đang bị khóa, False nếu không</returns>
         private bool IsAccountLocked()
         {
-            if (_lockoutUntil.HasValue && DateTime.Now < _lockoutUntil.Value)
+            if (_thoiGianKhoaDen.HasValue && DateTime.Now < _thoiGianKhoaDen.Value)
             {
-                int remainingMinutes = (int)(_lockoutUntil.Value - DateTime.Now).TotalMinutes;
-                ShowAccountLockedMessage(remainingMinutes);
+                int soPhutConLai = (int)(_thoiGianKhoaDen.Value - DateTime.Now).TotalMinutes;
+                ShowAccountLockedMessage(soPhutConLai);
                 return true;
             }
             return false;
         }
         //Hiển thị thông báo tài khoản bị khóa
-        //<param name="remainingMinutes">Số phút còn lại trước khi mở khóa</param>
-        private void ShowAccountLockedMessage(int remainingMinutes)
+        //<param name="soPhutConLai">Số phút còn lại trước khi mở khóa</param>
+        private void ShowAccountLockedMessage(int soPhutConLai)
         {
-            string message = $"Tài khoản đã bị khóa tạm thời do đăng nhập sai quá nhiều lần!\n\n" +
-                           $"Vui lòng thử lại sau {remainingMinutes} phút.";
+            string thongBao = $"Tài khoản đã bị khóa tạm thời do đăng nhập sai quá nhiều lần!\n\n" +
+                           $"Vui lòng thử lại sau {soPhutConLai} phút.";
 
             MessageBox.Show(
-                message,
+                thongBao,
                 "Tài khoản bị khóa",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Warning
@@ -191,10 +184,10 @@ namespace QuanLyCongViec
         //Reset lockout nếu thời gian khóa đã hết hạn
         private void ResetLockoutIfExpired()
         {
-            if (_lockoutUntil.HasValue && DateTime.Now >= _lockoutUntil.Value)
+            if (_thoiGianKhoaDen.HasValue && DateTime.Now >= _thoiGianKhoaDen.Value)
             {
-                _lockoutUntil = null;
-                _failedLoginAttempts = 0;
+                _thoiGianKhoaDen = null;
+                _soLanDangNhapSai = 0;
             }
         }
         //Validate dữ liệu đầu vào của form đăng nhập
@@ -232,118 +225,127 @@ namespace QuanLyCongViec
         //<returns>DataTable chứa thông tin user nếu đăng nhập thành công, null nếu thất bại</returns>
         private DataTable AuthenticateUser()
         {
-            string username = txtTaiKhoan.Text.Trim();
-            string password = txtMatKhau.Text;
-            string passwordHash = PasswordHelper.HashPassword(password);
+            string tenDangNhap = txtTaiKhoan.Text.Trim();
+            string matKhau = txtMatKhau.Text;
+            string maHoaMatKhau = PasswordHelper.HashPassword(matKhau);
 
-            SqlParameter[] parameters = new SqlParameter[]
+            SqlParameter[] thamSo = new SqlParameter[]
             {
-                new SqlParameter("@Username", username),
-                new SqlParameter("@PasswordHash", passwordHash)
+                new SqlParameter("@Username", tenDangNhap),
+                new SqlParameter("@PasswordHash", maHoaMatKhau)
             };
 
-            return DatabaseHelper.ExecuteStoredProcedure("sp_UserLogin", parameters);
+            return DatabaseHelper.ExecuteStoredProcedure("sp_UserLogin", thamSo);
         }
         //Xử lý kết quả đăng nhập từ database
-        //<param name="loginResult">Kết quả trả về từ stored procedure</param>
-        private void ProcessLoginResult(DataTable loginResult)
+        //<param name="ketQuaDangNhap">Kết quả trả về từ stored procedure</param>
+        private void ProcessLoginResult(DataTable ketQuaDangNhap)
         {
-            if (loginResult == null || loginResult.Rows.Count == 0)
+            if (ketQuaDangNhap == null || ketQuaDangNhap.Rows.Count == 0)
             {
                 HandleFailedLogin();
                 return;
             }
 
-            DataRow userRow = loginResult.Rows[0];
+            DataRow dongNguoiDung = ketQuaDangNhap.Rows[0];
 
             // Kiểm tra ErrorCode nếu stored procedure trả về
-            if (HasErrorCode(userRow))
+            if (HasErrorCode(dongNguoiDung))
             {
-                HandleErrorCodeResponse(userRow);
+                HandleErrorCodeResponse(dongNguoiDung);
                 return;
             }
 
             // Kiểm tra Id có null không (trường hợp stored procedure cũ)
-            if (IsUserIdNull(userRow))
+            if (IsUserIdNull(dongNguoiDung))
             {
                 HandleFailedLogin();
                 return;
             }
 
             // Đăng nhập thành công
-            HandleSuccessfulLogin(userRow);
+            HandleSuccessfulLogin(dongNguoiDung);
         }
         //Kiểm tra xem kết quả có chứa ErrorCode không
-        //<param name="userRow">Dòng dữ liệu từ database</param>
+        //<param name="dongNguoiDung">Dòng dữ liệu từ database</param>
         //<returns>True nếu có ErrorCode, False nếu không</returns>
-        private bool HasErrorCode(DataRow userRow)
+        private bool HasErrorCode(DataRow dongNguoiDung)
         {
-            return userRow.Table.Columns.Contains("ErrorCode");
+            return dongNguoiDung.Table.Columns.Contains("ErrorCode");
         }
         //Xử lý response có ErrorCode từ stored procedure
-        //<param name="userRow">Dòng dữ liệu từ database</param>
-        private void HandleErrorCodeResponse(DataRow userRow)
+        //<param name="dongNguoiDung">Dòng dữ liệu từ database</param>
+        private void HandleErrorCodeResponse(DataRow dongNguoiDung)
         {
-            object errorCodeObj = userRow["ErrorCode"];
-            if (errorCodeObj == null || errorCodeObj == DBNull.Value)
+            object maLoiObj = dongNguoiDung["ErrorCode"];
+            if (maLoiObj == null || maLoiObj == DBNull.Value)
             {
                 return;
             }
 
-            int errorCode = Convert.ToInt32(errorCodeObj);
-            if (errorCode == 0)
+            int maLoi = Convert.ToInt32(maLoiObj);
+            if (maLoi == 0)
             {
                 return; // Không có lỗi
             }
 
-            string errorMessage = userRow["ErrorMessage"]?.ToString() ?? "Đăng nhập thất bại";
+            string thongBaoLoi = dongNguoiDung["ErrorMessage"]?.ToString() ?? "Đăng nhập thất bại";
 
-            if (errorCode == 2) // Tài khoản bị khóa
+            if (maLoi == 2) // Tài khoản bị khóa
             {
-                ShowAccountDisabledMessage(errorMessage);
+                ShowAccountDisabledMessage(thongBaoLoi);
             }
             else
             {
-                _failedLoginAttempts++;
+                _soLanDangNhapSai++;
                 HandleFailedLogin();
             }
         }
         //Hiển thị thông báo tài khoản bị vô hiệu hóa
-        //<param name="errorMessage">Thông báo lỗi từ database</param>
-        private void ShowAccountDisabledMessage(string errorMessage)
+        //<param name="thongBaoLoi">Thông báo lỗi từ database</param>
+        private void ShowAccountDisabledMessage(string thongBaoLoi)
         {
-            string message = $"Tài khoản đã bị khóa hoặc vô hiệu hóa!\n\n{errorMessage}\n\nVui lòng liên hệ quản trị viên.";
+            string thongBao = $"Tài khoản đã bị khóa hoặc vô hiệu hóa!\n\n{thongBaoLoi}\n\nVui lòng liên hệ quản trị viên.";
 
             MessageBox.Show(
-                message,
+                thongBao,
                 "Tài khoản bị khóa",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Warning
             );
         }
-        //Kiểm tra UserId có null không
-        //<param name="userRow">Dòng dữ liệu từ database</param>
-        //<returns>True nếu UserId null, False nếu không</returns>
-        private bool IsUserIdNull(DataRow userRow)
+        //Kiểm tra mã người dùng có null không
+        //<param name="dongNguoiDung">Dòng dữ liệu từ database</param>
+        //<returns>True nếu mã người dùng null, False nếu không</returns>
+        private bool IsUserIdNull(DataRow dongNguoiDung)
         {
-            return userRow["Id"] == null || userRow["Id"] == DBNull.Value;
+            return dongNguoiDung["Id"] == null || dongNguoiDung["Id"] == DBNull.Value;
         }
         //Xử lý khi đăng nhập thành công
-        //<param name="userRow">Dòng dữ liệu chứa thông tin user</param>
-        private void HandleSuccessfulLogin(DataRow userRow)
+        //<param name="dongNguoiDung">Dòng dữ liệu chứa thông tin người dùng</param>
+        private void HandleSuccessfulLogin(DataRow dongNguoiDung)
         {
-            int userId = Convert.ToInt32(userRow["Id"]);
-            string username = txtTaiKhoan.Text.Trim();
-            string fullName = userRow["FullName"].ToString();
+            int maNguoiDung = Convert.ToInt32(dongNguoiDung["Id"]);
+            string tenDangNhap = txtTaiKhoan.Text.Trim();
+            string hoTen = dongNguoiDung["FullName"].ToString();
 
             // Reset số lần thất bại
             ResetFailedLoginAttempts();
 
             // Lưu thông tin đăng nhập nếu chọn "Ghi nhớ"
-            SaveOrClearRememberedCredentials(username);
+            SaveOrClearRememberedCredentials(tenDangNhap);
+
+            // LƯU THÔNG TIN NGƯỜI DÙNG VÀO CurrentUser ĐỂ CÁC FORM KHÁC CÓ THỂ SỬ DỤNG
+            CurrentUser.SetCurrentUser(maNguoiDung, tenDangNhap, hoTen);
 
             // Hiển thị thông báo thành công
-            ShowSuccessMessage(fullName);
+            ShowSuccessMessage(hoTen);
+
+            // Sau này khi có frmMain, sẽ mở frmMain với thông tin này:
+            // this.Hide();
+            // frmMain mainForm = new frmMain(maNguoiDung, tenDangNhap, hoTen);
+            // mainForm.ShowDialog();
+            // this.Close();
 
             // Đóng form
             this.DialogResult = DialogResult.OK;
@@ -352,16 +354,16 @@ namespace QuanLyCongViec
         //Reset số lần đăng nhập thất bại về 0
         private void ResetFailedLoginAttempts()
         {
-            _failedLoginAttempts = 0;
-            _lockoutUntil = null;
+            _soLanDangNhapSai = 0;
+            _thoiGianKhoaDen = null;
         }
         //Lưu hoặc xóa thông tin đăng nhập tùy theo checkbox "Ghi nhớ"
-        //<param name="username">Username cần lưu</param>
-        private void SaveOrClearRememberedCredentials(string username)
+        //<param name="tenDangNhap">Tên đăng nhập cần lưu</param>
+        private void SaveOrClearRememberedCredentials(string tenDangNhap)
         {
             if (chkGhiNhoDangNhap.Checked)
             {
-                SaveRememberedCredentials(username);
+                SaveRememberedCredentials(tenDangNhap);
             }
             else
             {
@@ -369,11 +371,11 @@ namespace QuanLyCongViec
             }
         }
         //Hiển thị thông báo đăng nhập thành công
-        //<param name="fullName">Họ tên của user</param>
-        private void ShowSuccessMessage(string fullName)
+        //<param name="hoTen">Họ tên của người dùng</param>
+        private void ShowSuccessMessage(string hoTen)
         {
             MessageBox.Show(
-                $"Đăng nhập thành công!\n\nXin chào, {fullName}!",
+                $"Đăng nhập thành công!\n\nXin chào, {hoTen}!",
                 "Thành công",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Information
@@ -383,12 +385,12 @@ namespace QuanLyCongViec
         //Tăng số lần thất bại và hiển thị thông báo phù hợp
         private void HandleFailedLogin()
         {
-            _failedLoginAttempts++;
+            _soLanDangNhapSai++;
 
-            string errorMessage = BuildFailedLoginMessage();
+            string thongBaoLoi = BuildFailedLoginMessage();
 
             MessageBox.Show(
-                errorMessage,
+                thongBaoLoi,
                 "Đăng nhập thất bại",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Error
@@ -400,18 +402,22 @@ namespace QuanLyCongViec
         //<returns>Thông báo lỗi</returns>
         private string BuildFailedLoginMessage()
         {
-            string baseMessage = "Tên đăng nhập hoặc mật khẩu không đúng!\n\nVui lòng kiểm tra lại.";
+            string thongBaoCoBan = "Tên đăng nhập hoặc mật khẩu không đúng!\n\nVui lòng kiểm tra lại.";
 
-            if (_failedLoginAttempts >= MAX_LOGIN_ATTEMPTS)
+            // Lấy giá trị từ database
+            int soLanDangNhapSaiToiDa = Helpers.SystemSettings.MaxLoginAttempts;
+            int thoiGianKhoaPhut = Helpers.SystemSettings.LockoutMinutes;
+
+            if (_soLanDangNhapSai >= soLanDangNhapSaiToiDa)
             {
-                _lockoutUntil = DateTime.Now.AddMinutes(LOCKOUT_MINUTES);
-                return baseMessage + $"\n\n⚠️ Cảnh báo: Bạn đã đăng nhập sai {_failedLoginAttempts} lần.\n" +
-                                   $"Tài khoản sẽ bị khóa tạm thời trong {LOCKOUT_MINUTES} phút.";
+                _thoiGianKhoaDen = DateTime.Now.AddMinutes(thoiGianKhoaPhut);
+                return thongBaoCoBan + $"\n\n⚠️ Cảnh báo: Bạn đã đăng nhập sai {_soLanDangNhapSai} lần.\n" +
+                                   $"Tài khoản sẽ bị khóa tạm thời trong {thoiGianKhoaPhut} phút.";
             }
             else
             {
-                int remainingAttempts = MAX_LOGIN_ATTEMPTS - _failedLoginAttempts;
-                return baseMessage + $"\n\nCòn lại {remainingAttempts} lần thử.";
+                int soLanConLai = soLanDangNhapSaiToiDa - _soLanDangNhapSai;
+                return thongBaoCoBan + $"\n\nCòn lại {soLanConLai} lần thử.";
             }
         }
         //Xóa trường mật khẩu và focus vào đó
@@ -421,23 +427,23 @@ namespace QuanLyCongViec
             txtMatKhau.Focus();
         }
         //Hiển thị thông báo lỗi khi có exception xảy ra
-        //<param name="ex">Exception xảy ra</param>
-        private void ShowLoginError(Exception ex)
+        //<param name="loi">Exception xảy ra</param>
+        private void ShowLoginError(Exception loi)
         {
             MessageBox.Show(
-                $"Lỗi khi đăng nhập!\n\nChi tiết: {ex.Message}",
+                $"Lỗi khi đăng nhập!\n\nChi tiết: {loi.Message}",
                 "Lỗi",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Error
             );
         }
-        //Lưu thông tin đăng nhập vào Settings (chỉ lưu username, không lưu password)
-        //<param name="username">Username cần lưu</param>
-        private void SaveRememberedCredentials(string username)
+        //Lưu thông tin đăng nhập vào Settings (chỉ lưu tên đăng nhập, không lưu mật khẩu)
+        //<param name="tenDangNhap">Tên đăng nhập cần lưu</param>
+        private void SaveRememberedCredentials(string tenDangNhap)
         {
             try
             {
-                Properties.Settings.Default.RememberedUsername = username;
+                Properties.Settings.Default.RememberedUsername = tenDangNhap;
                 Properties.Settings.Default.Save();
             }
             catch
@@ -459,15 +465,15 @@ namespace QuanLyCongViec
             }
         }
         //Load thông tin đăng nhập đã lưu từ Settings
-        //Tự động điền username và check checkbox "Ghi nhớ" nếu có
+        //Tự động điền tên đăng nhập và check checkbox "Ghi nhớ" nếu có
         private void LoadRememberedCredentials()
         {
             try
             {
-                string rememberedUsername = Properties.Settings.Default.RememberedUsername;
-                if (!string.IsNullOrWhiteSpace(rememberedUsername))
+                string tenDangNhapDaNho = Properties.Settings.Default.RememberedUsername;
+                if (!string.IsNullOrWhiteSpace(tenDangNhapDaNho))
                 {
-                    txtTaiKhoan.Text = rememberedUsername;
+                    txtTaiKhoan.Text = tenDangNhapDaNho;
                     chkGhiNhoDangNhap.Checked = true;
                     txtMatKhau.Focus();
                 }

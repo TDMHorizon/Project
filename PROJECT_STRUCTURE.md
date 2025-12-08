@@ -19,8 +19,7 @@ Project/
 │
 ├── 📄 README_SHARE.md                       ← Hướng dẫn chia sẻ project
 ├── 📄 SETUP_INSTRUCTIONS.txt                ← Hướng dẫn setup nhanh
-├── 📄 PROJECT_DESCRIPTION.md                ← Mô tả chi tiết dự án (cho đồ án Clean Code)
-├── 📄 PROJECT_SUMMARY.md                    ← Tóm tắt dự án
+├── 📄 PROJECT_STRUCTURE.md                  ← Mô tả cấu trúc project (file này)
 │
 ├── 📁 Database/                              ← SQL Scripts
 │   ├── 📄 CreateDatabase.sql                ← Script chính tạo database
@@ -29,8 +28,9 @@ Project/
 │   ├── 📄 AdditionalProcedures.sql         ← Stored Procedures bổ sung
 │   │   └── User Management, Task Management, Statistics
 │   │
-│   └── 📄 SeedData.sql                      ← Dữ liệu mẫu (tùy chọn)
-│       └── 4 Users, 13 Tasks để test
+│   ├── 📄 InsertRandomSampleData.sql        ← Tạo dữ liệu mẫu tự động (tùy chọn)
+│   ├── 📄 README_DATABASE.md                ← Hướng dẫn database chi tiết
+│   └── 📄 HUONG_DAN_TAO_DU_LIEU_MAU.txt    ← Hướng dẫn tạo dữ liệu mẫu
 │
 └── 📁 QuanLyCongViec/                       ← C# Project Code
     │
@@ -79,17 +79,10 @@ Project/
 - Hướng dẫn setup nhanh (text format)
 - Các bước cơ bản để chạy project
 
-**`PROJECT_DESCRIPTION.md`**
-- Mô tả chi tiết đầy đủ về dự án
-- Cách hệ thống hoạt động
-- Clean Code principles đã áp dụng
-- **Quan trọng cho đồ án Clean Code**
-
-**`PROJECT_SUMMARY.md`**
-- Tóm tắt ngắn gọn về dự án
-- Cấu trúc database
-- Clean Code principles
-- Metrics
+**`PROJECT_STRUCTURE.md`**
+- Mô tả chi tiết cấu trúc thư mục và files
+- Giải thích từng thành phần
+- Cách sử dụng project
 
 ---
 
@@ -125,12 +118,22 @@ Project/
     - `sp_GetDashboardStats` - Thống kê dashboard
 - **Cách chạy**: Chạy sau `CreateDatabase.sql`
 
-#### `SeedData.sql`
-- **Mục đích**: Chèn dữ liệu mẫu để test
+#### `InsertRandomSampleData.sql`
+- **Mục đích**: Tạo dữ liệu mẫu tự động để test
 - **Nội dung**:
-  - 4 Users: admin, nguyenvana, tranthib, levanc
-  - 13 Tasks với đầy đủ Status, Priority, Category
+  - Tự động tạo nhiều Users và Tasks ngẫu nhiên
+  - Có thể cấu hình số lượng Users và Tasks
+  - Tự động tạo tài khoản admin
 - **Cách chạy**: Tùy chọn, chỉ chạy nếu muốn có dữ liệu mẫu
+- **Xem thêm**: `HUONG_DAN_TAO_DU_LIEU_MAU.txt`
+
+#### `README_DATABASE.md`
+- **Mục đích**: Hướng dẫn chi tiết về database
+- **Nội dung**: Thứ tự chạy script, troubleshooting, kịch bản sử dụng
+
+#### `HUONG_DAN_TAO_DU_LIEU_MAU.txt`
+- **Mục đích**: Hướng dẫn chi tiết cách tạo dữ liệu mẫu
+- **Nội dung**: Cách sử dụng `InsertRandomSampleData.sql`
 
 ---
 
@@ -195,12 +198,12 @@ Project/
 
 ### Files tổng cộng:
 - **Solution/Project files**: 2 files
-- **Documentation**: 4 files
-- **SQL Scripts**: 3 files
-- **C# Source Code**: 8+ files
+- **Documentation**: 3 files (README_SHARE.md, SETUP_INSTRUCTIONS.txt, PROJECT_STRUCTURE.md)
+- **SQL Scripts**: 3 files chính + 2 file hướng dẫn
+- **C# Source Code**: 15+ files
 - **Properties**: 5 files
 
-### Tổng: ~22 files
+### Tổng: ~30+ files
 
 ---
 
@@ -257,11 +260,12 @@ Hoặc: Visual Studio → File → Open → Project/Solution
 3. **SQL Scripts**: Phải chạy theo thứ tự:
    - `CreateDatabase.sql` (bắt buộc)
    - `AdditionalProcedures.sql` (bắt buộc)
-   - `SeedData.sql` (tùy chọn)
+   - `InsertRandomSampleData.sql` (tùy chọn)
 
 4. **Documentation**: 
-   - `PROJECT_DESCRIPTION.md` - Quan trọng cho đồ án Clean Code
-   - `README_SHARE.md` - Quan trọng khi chia sẻ project
+   - `README_SHARE.md` - Hướng dẫn chia sẻ project
+   - `README_DATABASE.md` - Hướng dẫn database chi tiết
+   - `PROJECT_STRUCTURE.md` - Mô tả cấu trúc project
 
 ---
 
