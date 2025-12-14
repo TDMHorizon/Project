@@ -342,14 +342,13 @@ namespace QuanLyCongViec
             ShowSuccessMessage(hoTen);
 
             // Sau này khi có frmMain, sẽ mở frmMain với thông tin này:
-            // this.Hide();
-            // frmMain mainForm = new frmMain(maNguoiDung, tenDangNhap, hoTen);
-            // mainForm.ShowDialog();
-            // this.Close();
+             this.Hide();
+             FormMain mainForm = new FormMain(maNguoiDung, tenDangNhap, hoTen);
+             mainForm.ShowDialog();
+             this.Close();
 
             // Đóng form
-            this.DialogResult = DialogResult.OK;
-            this.Close();
+
         }
         //Reset số lần đăng nhập thất bại về 0
         private void ResetFailedLoginAttempts()

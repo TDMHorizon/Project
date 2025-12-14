@@ -191,6 +191,30 @@ namespace QuanLyCongViec.DataAccess
                 }
             }
         }
+
+        /// <summary>
+        /// Thực thi Stored Procedure trả về một giá trị vô hướng (scalar value).
+        /// </summary>
+        /// <param name="storedProcedureName">Tên stored procedure.</param>
+        /// <param name="parameters">Mảng các SqlParameters.</param>
+        /// <returns>Giá trị Integer được trả về bởi stored procedure (ví dụ: mã lỗi, mã thành công).</returns>
+        public static int ExecuteScalarStoredProcedure(string storedProcedureName, SqlParameter[] parameters = null)
+        {
+            using (SqlConnection conn = new SqlConnection(ConnectionString))
+            using (SqlCommand cmd = new SqlCommand(storedProcedureName, conn))
+            {
+                cmd.CommandType = CommandType.StoredProcedure;
+                if (parameters != null)
+                {
+                    cmd.Parameters.AddRange(parameters);
+                }
+
+                conn.Open();
+                object result = cmd.ExecuteScalar();
+                // Trả về 0 nếu kết quả null hoặc không phải số, nếu không thì trả về giá trị số
+                return (result != null && result != DBNull.Value) ? Convert.ToInt32(result) : 0;
+            }
+        }
     }
 }
 
