@@ -461,28 +461,34 @@ namespace QuanLyCongViec
             {
                 DataGridViewRow row = dgvCongViec.Rows[e.RowIndex];
                 
-                string ma = row.Cells["MaCongViec"]?.Value?.ToString() ?? "";
-                string ten = row.Cells["TenCongViec"]?.Value?.ToString() ?? "";
-                string uutien = row.Cells["DoUuTien"]?.Value?.ToString() ?? "";
-                string trangthai = row.Cells["TrangThai"]?.Value?.ToString() ?? "";
-                string nguoi = row.Cells["NguoiPhuTrach"]?.Value?.ToString() ?? "";
-                
-                // Format ngày tháng
-                string han = "";
-                if (row.Cells["NgayKetThuc"]?.Value != null)
+                // Lấy TaskId từ cột Id (ẩn)
+                int taskId = 0;
+                if (row.Cells["Id"]?.Value != null)
                 {
-                    if (row.Cells["NgayKetThuc"].Value is DateTime dt)
+                    taskId = Convert.ToInt32(row.Cells["Id"].Value);
+                }
+                else if (row.Cells["MaCongViec"]?.Value != null)
+                {
+                    // Fallback: Lấy từ MaCongViec (format: "CV123")
+                    string maCV = row.Cells["MaCongViec"].Value.ToString();
+                    if (maCV.StartsWith("CV"))
                     {
-                        han = dt.ToString("dd/MM/yyyy");
-                    }
-                    else if (DateTime.TryParse(row.Cells["NgayKetThuc"].Value.ToString(), out DateTime parsedDate))
-                    {
-                        han = parsedDate.ToString("dd/MM/yyyy");
+                        int.TryParse(maCV.Substring(2), out taskId);
                     }
                 }
-                
-                frmChiTietTask chiTietForm = new frmChiTietTask(ma, ten, han, uutien, trangthai, nguoi);
-                chiTietForm.ShowDialog();
+
+                if (taskId > 0)
+                {
+                    frmChiTietTask chiTietForm = new frmChiTietTask(taskId, _userId);
+                    chiTietForm.ShowDialog(this);
+                    // Refresh danh sách sau khi đóng form để cập nhật dữ liệu
+                    HienThiDanhSach();
+                }
+                else
+                {
+                    MessageBox.Show("Không thể xác định công việc được chọn!", "Lỗi",
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
             }
         }
 

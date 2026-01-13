@@ -219,7 +219,8 @@
             this.dgvCongViec.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.dgvCongViec.Size = new System.Drawing.Size(1013, 308);
             this.dgvCongViec.TabIndex = 20;
-            this.dgvCongViec.SelectionChanged += new System.EventHandler(this.dgvCongViec_SelectionChanged); 
+            this.dgvCongViec.SelectionChanged += new System.EventHandler(this.dgvCongViec_SelectionChanged);
+            this.dgvCongViec.CellDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvCongViec_CellDoubleClick); 
             this.label9.AutoSize = true;
             this.label9.Font = new System.Drawing.Font("Segoe UI", 7.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(163)));
             this.label9.Location = new System.Drawing.Point(691, 43);

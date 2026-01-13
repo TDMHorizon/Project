@@ -46,50 +46,65 @@
             this.ClientSize = new System.Drawing.Size(400, 480);
             this.Text = "Chi Tiết Task Chuyên Sâu";
             this.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.MaximizeBox = false;
+            this.MinimizeBox = false;
+            this.Name = "frmChiTietTask";
+            this.ShowInTaskbar = false;
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
 
             // Cấu hình các Control (Vị trí chuẩn theo ảnh của bạn)
+            this.lblMa.AutoSize = true;
             this.lblMa.Location = new System.Drawing.Point(20, 20);
             this.lblMa.Text = "Mã công việc:";
             this.txtMa.Location = new System.Drawing.Point(140, 17);
             this.txtMa.Size = new System.Drawing.Size(230, 25);
 
+            this.lblTen.AutoSize = true;
             this.lblTen.Location = new System.Drawing.Point(20, 55);
             this.lblTen.Text = "Tên công việc:";
             this.txtTen.Location = new System.Drawing.Point(140, 52);
             this.txtTen.Size = new System.Drawing.Size(230, 25);
             this.txtTen.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
 
+            this.lblNguoiLam.AutoSize = true;
             this.lblNguoiLam.Location = new System.Drawing.Point(20, 90);
             this.lblNguoiLam.Text = "Người thực hiện:";
             this.cboNguoiLam.Location = new System.Drawing.Point(140, 87);
             this.cboNguoiLam.Size = new System.Drawing.Size(230, 25);
             this.cboNguoiLam.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 
+            this.lblUuTien.AutoSize = true;
             this.lblUuTien.Location = new System.Drawing.Point(20, 125);
             this.lblUuTien.Text = "Mức ưu tiên:";
             this.cboUuTien.Location = new System.Drawing.Point(140, 122);
             this.cboUuTien.Size = new System.Drawing.Size(230, 25);
 
+            this.lblHan.AutoSize = true;
             this.lblHan.Location = new System.Drawing.Point(20, 160);
             this.lblHan.Text = "Hạn chót:";
             this.dtpHan.Location = new System.Drawing.Point(140, 157);
             this.dtpHan.Size = new System.Drawing.Size(230, 25);
 
+            this.lblTrangThai.AutoSize = true;
             this.lblTrangThai.Location = new System.Drawing.Point(20, 195);
             this.lblTrangThai.Text = "Trạng thái:";
             this.cboTrangThai.Location = new System.Drawing.Point(140, 192);
             this.cboTrangThai.Size = new System.Drawing.Size(230, 25);
 
+            this.lblTienDo.AutoSize = true;
             this.lblTienDo.Location = new System.Drawing.Point(20, 230);
             this.lblTienDo.Text = "Tiến độ:";
             this.trkTienDo.Location = new System.Drawing.Point(140, 225);
             this.trkTienDo.Size = new System.Drawing.Size(180, 45);
             this.trkTienDo.Maximum = 100;
 
+            this.lblPhanTram.AutoSize = true;
             this.lblPhanTram.Location = new System.Drawing.Point(325, 230);
             this.lblPhanTram.Text = "0%";
             this.lblPhanTram.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
 
+            this.lblMoTa.AutoSize = true;
             this.lblMoTa.Location = new System.Drawing.Point(20, 275);
             this.lblMoTa.Text = "Ghi chú/Chi tiết:";
             this.txtMoTa.Location = new System.Drawing.Point(20, 300);
