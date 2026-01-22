@@ -277,18 +277,6 @@ namespace QuanLyCongViec
             frmThemSuaTask taskForm = new frmThemSuaTask(_currentUserId);
             taskForm.ShowDialog();
             CapNhatDashboard(); // Refresh sau khi đóng
-            RefreshCalendarForm(); // Refresh calendar bên phải
-        }
-
-        /// <summary>
-        /// Refresh form calendar nếu đang mở
-        /// </summary>
-        private void RefreshCalendarForm()
-        {
-            if (_calendarForm != null && !_calendarForm.IsDisposed)
-            {
-                // Có thể thêm method RefreshData() trong frmThoiKhoaBieu nếu cần
-            }
         }
 
         // Mở form thông báo

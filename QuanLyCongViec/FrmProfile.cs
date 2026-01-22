@@ -1,4 +1,4 @@
-﻿using QuanLyCongViec.DataAccess;
+using QuanLyCongViec.DataAccess;
 using QuanLyCongViec.Helpers;
 using System;
 using System.Collections.Generic;
@@ -8,6 +8,7 @@ using System.Data.SqlClient;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -148,6 +149,28 @@ namespace QuanLyCongViec
 
         #endregion
 
+        #region VALIDATION
+
+        // ⭐ Kiểm tra định dạng email hợp lệ
+        private bool IsValidEmail(string email)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+                return false;
+
+            try
+            {
+                // Regex pattern cho email hợp lệ
+                string pattern = @"^[^@\s]+@[^@\s]+\.[^@\s]+$";
+                return Regex.IsMatch(email, pattern, RegexOptions.IgnoreCase);
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        #endregion
+
         #region XỬ LÝ CẬP NHẬT THÔNG TIN
 
         private void XuLyCapNhatThongTin()
@@ -169,6 +192,26 @@ namespace QuanLyCongViec
             {
                 MessageBox.Show("Họ tên không được để trống.", "Cảnh báo",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txt_Hoten.Focus();
+                return;
+            }
+
+            // Kiểm tra email không được để trống
+            if (string.IsNullOrEmpty(email))
+            {
+                MessageBox.Show("Email không được để trống.", "Cảnh báo",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txt_Email.Focus();
+                return;
+            }
+
+            // Kiểm tra định dạng email
+            if (!IsValidEmail(email))
+            {
+                MessageBox.Show("Email không hợp lệ! Vui lòng nhập đúng định dạng email.\nVí dụ: example@gmail.com", 
+                    "Cảnh báo",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txt_Email.Focus();
                 return;
             }
 
@@ -215,7 +258,7 @@ namespace QuanLyCongViec
                 string.IsNullOrEmpty(matKhauMoi) ||
                 string.IsNullOrEmpty(xacNhan))
             {
-                MessageBox.Show("Vui lòng nhập đầy đủ thông tin!",
+                MessageBox.Show("Vui lòng nhập đầy đủ mật khẩu",
                     "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
